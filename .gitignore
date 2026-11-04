@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+# Generated from Microsoft Segoe UI, which may not be shared: make them with tools/make_ui_fonts.py
+src/ui_fonts.cpp
+src/ui_fonts.h
+build/
