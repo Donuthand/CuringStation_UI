@@ -175,6 +175,11 @@ button, check that the two copies are still identical.
 This controls a 220 V heater. The heating mat keeps its own dial thermostat and a fuse as backstops.
 The SSR pin is set LOW as the first step of `setup()`. Do not run `Test_stuck_on` unattended. Work on the mains side only with the plug pulled.
 
+## Licence
+
+The code is under the MIT License (see `LICENSE`). The FUJIFILM wordmark in `src/ui_logo.*` is a trademark
+of FUJIFILM Corporation and is not covered by this licence.
+
 ## Author
 
 Phatcharapon Putyuen, co-op student, Biomedical Engineering, King Mongkut's Institute of
