@@ -1935,9 +1935,11 @@ static void menuPick(uint8_t i) {
     case 4: volFromMenu = true; openNumber(Screen::SetVolume); break;
     case 5:
       // Handoff 8: straight to the minutes while the mat is on; the state page while it is off.
+      // While the off timer counts down, open the Heating mat page so "Change off timer" /
+      // "Cancel timer" are offered; going straight to the minutes had hidden Cancel.
       heatFromBadge = false;
-      if (Station::heatEnabled()) openHeatTimer();
-      else                        openHeatState();
+      if (Station::heatEnabled() && Station::heatOffRemainingSec() == 0) openHeatTimer();
+      else                                                               openHeatState();
       break;
   }
 }
@@ -1972,7 +1974,12 @@ static void goBack() {
     case Screen::EditSound:      goToScreen(toneFromActions ? Screen::UserActions : Screen::ManageUsers); break;
     case Screen::AddUserName:    goToScreen(Screen::ManageUsers); break;
     case Screen::AddUserSound:   goToScreen(Screen::AddUserName); break;   // the typed name is kept
-    case Screen::HeatTimer:      if (heatFromBadge) goToScreen(Screen::Main); else openHeatState(); break;
+    case Screen::HeatTimer:
+      // A running timer: back to the page that opened "Change off timer" (it is the one with Cancel).
+      if (Station::heatOffRemainingSec() > 0) goToScreen(Screen::HeatMenu);
+      else if (heatFromBadge)                 goToScreen(Screen::Main);
+      else                                    openHeatState();
+      break;
     case Screen::HeatWarn:       openHeatTimer(); break;
     case Screen::SetVolume:      if (volFromMenu) goToScreen(Screen::Menu); else openNumber(Screen::SetAlarm); break;
     default: break;   // Main, Alarm, PowerLoss: nothing to go back to
@@ -2111,7 +2118,8 @@ static void heatMenuRow(uint8_t r) {
   if (r == 0) { openHeatTimer(); return; }
   if (r == 1 && Station::heatOffRemainingSec() > 0) {
     Station::cancelHeatOffTimer();   // the timer only — the mat stays on, cures keep running
-    openHeatState();                 // mat ON, no timer: back to Settings
+    if (heatFromBadge) goToScreen(Screen::Main);   // opened from Home: back Home
+    else               openHeatState();            // mat ON, no timer: back to Settings
   }
 }
 
@@ -2380,9 +2388,10 @@ static void handleHit(Hit h, uint8_t i) {
       // Mat ON: straight to the minutes (handoff 5). Mat OFF: the Heating mat page with
       // "Turn heat ON", which returns straight Home (Dough, 2026-09-23 — the handoff opened
       // the minutes entry here too). Back from either returns Home.
+      // Timer counting down: the Heating mat page with Change / Cancel.
       heatFromBadge = true;
-      if (Station::heatEnabled()) openHeatTimer();
-      else                        goToScreen(Screen::HeatMenu);
+      if (Station::heatEnabled() && Station::heatOffRemainingSec() == 0) openHeatTimer();
+      else                                                               goToScreen(Screen::HeatMenu);
       break;
     default:
       break;
